@@ -1,69 +1,173 @@
-const inputField = document.getElementById("myText");
-const actionBtn = document.getElementById("myBtn");
-const contain = document.getElementById("tasks");
-const clearBtn = document.getElementById("clearBtn");
+let theTasks = JSON.parse(localStorage.getItem("myTasks")) || [];
+const addBtn = document.getElementById("add");
 const taskForm = document.getElementById("taskForm");
-const addBtn = document.getElementById("add-btn");
-const title = document.getElementById("taskTitle");
-const dueDate = document.getElementById("dueDate");
-const description = document.getElementById("description");
-const taskPriority = document.getElementById("taskPriority");
-const dateInput = document.getElementById("dueDate");
-const dateIcon = document.querySelector(".date-icon");
-const dateField = document.getElementById("dateField");
-const picker = document.getElementById("picker");
-const date = document.getElementById("date");
-const daysGrid = document.getElementById("days");
-const prevBtn = document.getElementById("prev");
-const nextBtn = document.getElementById("next");
-const todayBtn = document.getElementById("today");
-const clearDateBtn = document.getElementById("clear");
-const stBtns = document.querySelectorAll(".btn-bar button[data-status]");
-const filterP = document.getElementById("filter-p");
 const overlay = document.getElementById("overlay");
-const formTitle = document.querySelector("#taskForm h3");
-const cancelBtn = document.querySelector("#taskForm .other");
-
-let theTasks = [];
 let editId = null;
-let currentStatus = "all";
-const STORAGE_KEY = "tasknet_tasks";
 
 
+addBtn.addEventListener("click", (e) => {
+    e.preventDefault()
+    const hidden = !taskForm.classList.contains("show");
+    if (hidden){
+        taskForm.classList.add("show")
+        overlay.classList.add("show")
+    } else{
+        taskForm.classList.remove("show")
+        overlay.classList.remove("show")
+    }
+})
 
-function saveTasks() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(theTasks));
+const days = document.getElementById("days");
+const months = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"];
+let theDate = new Date();
+let selectedDate = null
+let year = theDate.getFullYear()
+let month = theDate.getMonth()
+let day = theDate.getDate()
+
+const dateInput = document.getElementById("dueDate")
+
+function renderCalendar(month, year){
+    days.innerHTML = "";
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    for(let i = 0; i < firstDay; i++){
+        const empty = document.createElement("div");
+        days.appendChild(empty);
+    }
+
+    for(let d = 1; d <= daysInMonth; d++){
+        const btn = document.createElement("button");
+        btn.classList.add("btn")
+        btn.textContent = d;
+        btn.classList.add("day");
+        days.appendChild(btn);
+        btn.addEventListener("click", (e)=>{
+            e.preventDefault()
+            selectedDate = new Date(year, month, d);
+            dateInput.value =
+            `${String(month + 1).padStart(2, "0")}/` + `${String(d).padStart(2, "0")}/` + `${year}`;
+            picker.classList.remove("show");
+        });
+        btn.style.backgroundColor = "transparent"
+        btn.style.border = "1px solid #EDE9FE"
+        btn.style.borderRadius = "50%"
+        btn.style.width = "2rem"
+        btn.style.height = "2rem"
+    }
 }
 
-
-function loadTasks() {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    theTasks = raw ? JSON.parse(raw) : [];
+const msg = document.getElementById("alert")
+function sendMsg(){
+    const hidden = !msg.classList.contains("show");
+    if (hidden) {
+        msg.classList.add("show")
+        overlay.classList.add("show")
+    } else {
+        msg.classList.remove("show")
+        overlay.classList.remove("show")
+    }
+}
+function clsMsg(){
+    const hidden = !msg.classList.contains("show");
+    if (hidden) {
+        msg.classList.add("show")
+        overlay.classList.add("show")
+    } else {
+        msg.classList.remove("show")
+        overlay.classList.remove("show")
+    }
 }
 
+const dateBtn = document.getElementById("date-icon");
+const picker = document.getElementById("picker");
+const monthTxt = document.getElementById("date")
 
-function generateId() {
-    return "task-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 7);
-}
+dateBtn.addEventListener("click", (e) => {
+    e.preventDefault()
+    const hidden = !picker.classList.contains("show");
+    if (hidden){
+        picker.classList.add("show")
+    } else{
+        picker.classList.remove("show")
+    }
+    monthTxt.textContent = `${months[month]} - ${year}`
+    renderCalendar(month, year);
+})
 
+const prevBtn = document.getElementById("prev")
+const nextBtn = document.getElementById("next")
 
+prevBtn.addEventListener("click", (e) => {
+    e.preventDefault()
+    month--
+    if (month < 0) {
+        month = 11;
+        year--;
+    }
+    renderCalendar(month, year)
+    monthTxt.textContent = `${months[month]} - ${year}`
+})
 
-function renderTaskCard(task) {
-    contain.insertAdjacentHTML("beforeend", `
-    <div class="newTask" data-id="${task.id}" data-status="${task.status}" data-priority="${task.priority}">
+nextBtn.addEventListener("click", (e) => {
+    e.preventDefault()
+    month++
+    if (month > 11) {
+        month = 0;
+        year++;
+    }
+    renderCalendar(month, year)
+    monthTxt.textContent = `${months[month]} - ${year}`
+})
+const today = document.getElementById("today")
+const clear = document.getElementById("clear")
+today.addEventListener("click", (e) => {
+    e.preventDefault()
+    selectedDate = new Date().toLocaleDateString()
+    dateInput.value = selectedDate
+})
+clear.addEventListener("click", (e) => {
+    e.preventDefault()
+    dateInput.value = ""
+})
+
+const task = document.getElementById("taskTitle")
+const description = document.getElementById("description")
+const priority = document.getElementById("taskPriority")
+const newTask = document.getElementById("add-btn")
+const tasks = document.getElementById("tasks")
+const small = document.getElementById("small-div")
+const tDiv = document.getElementById("title-div")
+const dDiv = document.getElementById("des-div")
+const dateDiv = document.getElementById("dateField")
+const prDiv = document.getElementById("pr-div")
+
+function addTasks(data){
+    small.style.display = "none"
+    task.value = ""
+    dateInput.value = ""
+    description.value = ""
+    taskForm.classList.remove('show');
+    overlay.classList.remove('show');
+
+    tasks.insertAdjacentHTML('beforeend', 
+    `<div class="newTask addTask" id="Task">
         <div>
-            <p>${task.title}</p>
-            <small>Due Date: ${task.dueDate}</small><br>
-            <small>${task.description}</small>
-
+            <p class="font">${data.title}</p>
+            <small class="font">Due Date: ${data.dueDate}</small><br>
+            <small class="font">${data.description}</small>
+        
             <div class="priority">
                 <div class="theColor"></div>
-                <small>${task.priority}</small>
+                <small class="font">${data.priority}</small>
             </div>
         </div>
 
-        <div class="state">
-            <select>
+        <div class="state font">
+            <select class="task-st">
                 <option value="pending">Pending</option>
                 <option value="in-progress">In Progress</option>
                 <option value="completed">Completed</option>
@@ -79,348 +183,329 @@ function renderTaskCard(task) {
             </button>
         </div>
     </div>`);
+    
+    const addTask = tasks.lastElementChild;
+    addTask.dataset.id = data.id;
+    const reset = addTask.querySelector(".toReset");
+    reset.addEventListener("click", () => {
+        sendMsg()
+        msg.innerHTML = 
+        `<h3>Are you sure?</h3>
+        <p class="font">Are you sure you want to delete this task?</p>
+        <div style="display='flex'; width='90%'; justify-content='space-evenly'">
+            <button id="confirm">Delete</button>
+            <button id="cancel">Cancel</button>
+        </div>`
+        
+        const confirmBtn = document.getElementById("confirm")
+        const cancel = document.getElementById("cancel")
+        confirmBtn.addEventListener("click", () => {
+            const id = Number(addTask.dataset.id)
+            theTasks = theTasks.filter(task => task.id !== id);
+            localStorage.setItem("myTasks", JSON.stringify(theTasks));
+            addTask.remove();
+            clsMsg()
+        })
+        cancel.addEventListener("click", () => {
+            msg.classList.remove("show")
+            overlay.classList.remove("show")
+        })
+    });
+    const statusSelect = addTask.querySelector(".task-st");
+    statusSelect.value = data.status;
+    statusSelect.addEventListener("change", () => {
+        const id = Number(addTask.dataset.id);
+        const curTask = theTasks.find(task => task.id === id);
+        curTask.status = statusSelect.value;
+        data.status = statusSelect.value;
+        localStorage.setItem("myTasks", JSON.stringify(theTasks));
+    });
 
-    const card = contain.lastElementChild;
-    card.querySelector(".state select").value = task.status;
-    const priorityColors = { high: "#EF4444", medium: "#F59E0B", low: "#10B981" };
-    const priorityBox = card.querySelector(".priority");
-    const colorDot = card.querySelector(".theColor");
-    priorityBox.style.display = "inline-flex";
-    priorityBox.style.alignItems = "center";
-    priorityBox.style.gap = "0.5rem";
-    priorityBox.style.margin = "1rem";
-    colorDot.style.display = "inline";
-    colorDot.style.backgroundColor = priorityColors[task.priority] || priorityColors.low;
-    colorDot.style.borderRadius = "50%";
-    colorDot.style.width = "1rem";
-    colorDot.style.height = "1rem";
-    card.classList.add(task.priority);
+    const edit = addTask.querySelector(".toEdit")
+    edit.addEventListener("click", (e) => {
+        e.preventDefault()
+        overlay.classList.add("show")
+        taskForm.classList.add("show")
+        const id = Number(addTask.dataset.id)
+        const curTask = theTasks.find(task => task.id === id);
+        editId = id
+        task.value = curTask.title;
+        description.value = curTask.description;
+        dateInput.value = curTask.dueDate;
+        priority.value = curTask.priority;
+    })
 
-    return card;
-}
 
-function renderAllTasks() {
-    contain.querySelectorAll(".newTask").forEach(el => el.remove());
-    theTasks.forEach(renderTaskCard);
-    togglePlaceholder();
-}
+    const clearAll = document.getElementById("clearBtn")
+    clearAll.addEventListener("click", () => {
+        sendMsg()
+        msg.innerHTML = 
+        `<h3>Are you sure?</h3>
+        <p>Are you sure you want to delete this task?</p>
+        <div style="display='flex'; width='90%'; justify-content='space-evenly'">
+            <button id="confirm">Delete</button>
+            <button id="cancel">Cancel</button>
+        </div>`
+        const confirmBtn = document.getElementById("confirm")
+        const cancel = document.getElementById("cancel")
+        confirmBtn.addEventListener("click", () => {
+            theTasks = theTasks.filter(task => task.status !== "completed");
+            localStorage.setItem("myTasks", JSON.stringify(theTasks));
+            showTasks(theTasks)
+            clsMsg()
+        })
+        cancel.addEventListener("click", () => {
+            msg.classList.remove("show")
+            overlay.classList.remove("show")
+        })
+    })
+    if (data.priority.toLowerCase() === "high") {
+        const priority = addTask.querySelector(".priority");
+        const theColor = addTask.querySelector(".theColor");
+        priority.style.display = "inline-flex";
+        priority.style.alignItems = "center";
+        priority.style.gap = "0.5rem";
+        priority.style.margin="1rem";
+        theColor.style.display = "inline";
+        theColor.style.backgroundColor = "#EF4444";
+        theColor.style.borderRadius = "50%";
+        theColor.style.width = "1rem";
+        theColor.style.height = "1rem";
+        addTask.classList.add("high");
 
-function togglePlaceholder() {
-    const placeholder = document.getElementById("text");
-    const wrapper = document.getElementsByClassName("small")[0];
-    if (theTasks.length === 0) {
-        placeholder.textContent = "Tasks appear here.";
-        wrapper.style.display = "flex";
-    } else {
-        wrapper.style.display = "none";
+    } else if (data.priority.toLowerCase() === "medium") {
+        const priority = addTask.querySelector(".priority");
+        const theColor = addTask.querySelector(".theColor");
+        priority.style.display = "inline-flex";
+        priority.style.alignItems = "center";
+        priority.style.gap = "0.5rem";
+        priority.style.margin="1rem";
+        theColor.style.display = "inline";
+        theColor.style.backgroundColor = "#F59E0B";
+        theColor.style.borderRadius = "50%";
+        theColor.style.width = "1rem";
+        theColor.style.height = "1rem";
+        addTask.classList.add("medium");
+
+    } else if (data.priority.toLowerCase() === "low") {
+        const priority = addTask.querySelector(".priority");
+        const theColor = addTask.querySelector(".theColor");
+        priority.style.display = "inline-flex";
+        priority.style.alignItems = "center";
+        priority.style.gap = "0.5rem";
+        priority.style.margin="1rem";
+        theColor.style.display = "inline";
+        theColor.style.backgroundColor = "#10B981";
+        theColor.style.borderRadius = "50%";
+        theColor.style.width = "1rem";
+        theColor.style.height = "1rem";
+        addTask.classList.add("low");
     }
-}
-
-actionBtn.addEventListener("click", () => {
-    const isHidden = !taskForm.classList.contains("show");
-    if (isHidden) {
-        taskForm.classList.add("show");
-        overlay.classList.add("show");
-    } else {
-        taskForm.classList.remove("show");
-        overlay.classList.remove("show");
-    }
-});
-
-addBtn.addEventListener("click", (e) => {
-    e.preventDefault();
-
-    if (!title.value.trim()) return;
-
-    if (editId !== null) {
-        const task = theTasks.find(t => t.id === editId);
-        if (task) {
-            task.title = title.value;
-            task.dueDate = dueDate.value;
-            task.description = description.value;
-            task.priority = taskPriority.value.toLowerCase();
-        }
-        editId = null;
-        formTitle.textContent = "Add Task";
-    } else {
-        theTasks.push({
-            id: generateId(),
-            title: title.value,
-            dueDate: dueDate.value,
-            description: description.value,
-            priority: taskPriority.value.toLowerCase(),
-            status: "pending"
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "dark") {
+        addTask.classList.add("dark-bg");
+        addTask.querySelectorAll(".font").forEach(txt => {
+            txt.style.setProperty("color", "#DBEAFE", "important");
         });
     }
+}
 
-    saveTasks();
-    renderAllTasks();
-    applyFilters();
 
-    title.value = "";
-    dueDate.value = "";
-    description.value = "";
-    taskForm.classList.remove("show");
-    overlay.classList.remove("show");
-});
-
-cancelBtn.addEventListener("click", (e) => {
+newTask.addEventListener("click", (e) => {
     e.preventDefault();
-    editId = null;
-    title.value = "";
-    dueDate.value = "";
-    description.value = "";
-    formTitle.textContent = "Add Task";
-    taskForm.classList.remove("show");
-    overlay.classList.remove("show");
-});
-
-
-contain.addEventListener("click", (e) => {
-    const removeButton = e.target.closest("button.toReset");
-    if (removeButton) {
-        const taskItem = removeButton.closest(".newTask");
-        if (taskItem) {
-            const id = taskItem.dataset.id;
-            theTasks = theTasks.filter(t => t.id !== id);
-            taskItem.remove();
-            saveTasks();
-            togglePlaceholder();
-            applyFilters();
-        }
+    document.querySelectorAll(".warning").forEach(w => w.remove());
+    task.style.border = "0.1em solid #D1FAE5";
+    description.style.border = "0.1em solid #D1FAE5";
+    dateInput.style.border = "0.1em solid #D1FAE5"
+    if (task.value.trim() === "") {
+        task.style.border = "1px solid #EF4444";
+        const warning = document.createElement("small");
+        warning.classList.add("warning");
+        warning.textContent = "Write a title for your task";
+        warning.style.color = "#EF4444";
+        tDiv.appendChild(warning);
+        return;
     }
-});
 
-
-contain.addEventListener("click", (e) => {
-    const editButton = e.target.closest("button.toEdit");
-    if (editButton) {
-        const taskItem = editButton.closest(".newTask");
-        if (taskItem) {
-            const task = theTasks.find(t => t.id === taskItem.dataset.id);
-            if (task) {
-                title.value = task.title;
-                dueDate.value = task.dueDate;
-                description.value = task.description;
-                taskPriority.value = task.priority;
-                editId = task.id;
-                formTitle.textContent = "Edit Task";
-                taskForm.classList.add("show");
-                overlay.classList.add("show");
-            }
-        }
+    if (description.value.trim() === "") {
+        description.style.border = "1px solid #EF4444";
+        const warning = document.createElement("small");
+        warning.classList.add("warning");
+        warning.textContent = "Write a description for your task";
+        warning.style.color = "#EF4444";
+        dDiv.appendChild(warning);
+        return;
     }
-});
 
-
-contain.addEventListener("change", (e) => {
-    const stSelect = e.target.closest(".state select");
-    if (stSelect) {
-        const taskItem = stSelect.closest(".newTask");
-        if (taskItem) {
-            const task = theTasks.find(t => t.id === taskItem.dataset.id);
-            if (task) task.status = stSelect.value;
-            taskItem.dataset.status = stSelect.value;
-            saveTasks();
-            applyFilters();
-        }
+    if (dateInput.value.trim() === ""){
+        dateInput.style.border = "1px solid #EF4444";
+        const warning = document.createElement("small");
+        warning.classList.add("warning");
+        warning.textContent = "Choose a due date";
+        warning.style.color = "#EF4444";
+        dateDiv.appendChild(warning);
+        return;
     }
+
+    const taskData = {
+        id: Date.now(),
+        title: task.value,
+        description: description.value,
+        dueDate: dateInput.value,
+        priority: priority.value,
+        status: "pending"
+    };
+    
+    if (editId !== null){
+        const curTask = theTasks.find(task => task.id === editId);
+        curTask.title = task.value;
+        curTask.description = description.value;
+        curTask.dueDate = dateInput.value;
+        curTask.priority = priority.value;
+        localStorage.setItem("myTasks", JSON.stringify(theTasks));
+        tasks.innerHTML = "";
+        theTasks.forEach(task => {
+            addTasks(task);
+        });
+        editId = null;
+    }else{
+        const taskData = {
+            id: Date.now(),
+            title: task.value,
+            description: description.value,
+            dueDate: dateInput.value,
+            priority: priority.value,
+            status: "pending"
+        };
+        theTasks.push(taskData);
+        localStorage.setItem("myTasks", JSON.stringify(theTasks));
+        addTasks(taskData);
+    }
+})
+
+
+theTasks.forEach(task => {
+    addTasks(task)
 });
 
+const search = document.getElementById("search")
+const all = document.getElementById("all")
+const pending = document. getElementById("pending")
+const inProgress = document.getElementById("in-progress")
+const completed = document.getElementById("completed")
 
-function applyFilters() {
-    const searchT = inputField.value.trim().toLowerCase();
-    const prValue = filterP ? filterP.value : "all";
-    const taskCards = contain.querySelectorAll(".newTask");
-    let count = 0;
-
-    taskCards.forEach(task => {
-        const smalls = task.querySelectorAll("small");
-        const taskTitle = (task.querySelector("p")?.textContent || "").toLowerCase();
-        const taskDesc = (smalls[1]?.textContent || "").toLowerCase();
-
-        const taskS = task.dataset.status || "pending";
-        const taskValue = task.dataset.priority || "low";
-
-        const matches = searchT === "" || taskTitle.includes(searchT) || taskDesc.includes(searchT);
-        const matchesSt = currentStatus === "all" || taskS === currentStatus;
-        const matchesPr = prValue === "all" || taskValue === prValue;
-
-        if (matches && matchesSt && matchesPr) {
-            task.style.display = "flex";
-            count++;
-        } else {
-            task.style.display = "none";
-        }
+function showTasks(arr){
+    tasks.innerHTML = "";
+    arr.forEach(task => {
+        addTasks(task);
     });
-
-    const placeholder = document.getElementById("text");
-    const wrapper = document.getElementsByClassName("small")[0];
-    if (placeholder && wrapper) {
-        if (taskCards.length === 0) {
-            placeholder.textContent = "Tasks appear here.";
-            wrapper.style.display = "flex";
-        } else if (count === 0) {
-            placeholder.textContent = "No tasks match your search/filter.";
-            wrapper.style.display = "flex";
-        } else {
-            wrapper.style.display = "none";
-        }
-    }
 }
 
-inputField.addEventListener("input", applyFilters);
+all.addEventListener("click", () => {
+    showTasks(theTasks);
+});
+pending.addEventListener("click", () => {
+    const filtered = theTasks.filter(task => task.status === "pending");
+    showTasks(filtered);
+});
+inProgress.addEventListener("click", () => {
+    const filtered = theTasks.filter(task => task.status === "in-progress");
+    showTasks(filtered);
+});
+completed.addEventListener("click", () => {
+    const filtered = theTasks.filter(task => task.status === "completed");
+    showTasks(filtered);
+});
 
-if (filterP) {
-    filterP.addEventListener("change", applyFilters);
+const dark = document.getElementById("dark")
+const light = document.getElementById("light")
+const body = document.body;
+const fCard = document.getElementById("f-card")
+const font = document.querySelectorAll(".font")
+const inputs = document.querySelectorAll(".inputTask")
+const theTask = document.querySelectorAll(".addTask")
+const select = document.querySelectorAll("select")
+const alertMsg = document.getElementById("alert")
+const btn = document.querySelectorAll("button")
+
+dark.addEventListener("click", (e) => {
+    e.preventDefault()
+    localStorage.setItem("theme", "dark");
+    dark.style.backgroundColor = "#DBEAFE"
+    light.style.backgroundColor = "transparent"
+    body.classList.add("dark-bg")
+    fCard.classList.add("dark-card")
+    small.classList.add("dark-card")
+    taskForm.classList.add("dark-card")
+    taskForm.style.backgroundColor = "#1E293B"
+    inputs.forEach(input => {
+        input.classList.add("dark-bg")
+    })
+    tasks.classList.add("dark-card")
+    theTask.forEach(task => {
+        task.classList.add("dark-bg")
+    })
+    search.classList.add("dark-bg")
+    font.forEach(txt => {
+        txt.style.setProperty("color", "#DBEAFE", "important")
+    })
+    select.forEach(s => {
+        s.classList.add("dark-bg")
+    })
+    alertMsg.style.color = "#DBEAFE"
+    alertMsg.style.backgroundColor = "#1E293B"
+    btn.style.color = "#DBEAFE"
+})
+
+light.addEventListener("click", (e) => {
+    e.preventDefault()
+    localStorage.setItem("theme", "light");
+    light.style.backgroundColor = "#DBEAFE"
+    dark.style.backgroundColor = "transparent"
+    body.classList.remove("dark-bg")
+    fCard.classList.remove("dark-card")
+    small.classList.remove("dark-card")
+    taskForm.classList.remove("dark-card")
+    inputs.forEach(input => {
+        input.classList.remove("dark-bg")
+    })
+    tasks.classList.remove("dark-card")
+    theTask.forEach(task => {
+        task.classList.remove("dark-bg")
+    })
+    search.classList.remove("dark-bg")
+    font.forEach(txt => {
+        txt.style.setProperty("color", "#1E293B", "important")
+    })
+    select.forEach(s => {
+        s.classList.remove("dark-bg")
+    })
+    alertMsg.style.color = "#1E293B"
+    alertMsg.style.backgroundColor = "#FFFFFF"
+    btn.style.color = "#1E293B"
+})
+
+const savedTheme = localStorage.getItem("theme");
+if (savedTheme === "dark") {
+    dark.click();
+} else {
+    light.click();
 }
 
-stBtns.forEach(btn => {
-    btn.addEventListener("click", () => {
-        currentStatus = btn.dataset.status;
-        stBtns.forEach(b => b.classList.remove("active-filter"));
-        btn.classList.add("active-filter");
-        applyFilters();
-    });
-});
+search.addEventListener("input", () => {
+    let searchVal = search.value.toLowerCase().trim()
+    let searchFil = theTasks.filter(task => task.title.toLowerCase().includes(searchVal))
+    showTasks(searchFil)
+})
 
-document.querySelector('.btn-bar button[data-status="all"]')?.classList.add("active-filter");
-
-
-clearBtn.addEventListener("click", () => {
-    theTasks = theTasks.filter(t => t.status !== "completed");
-    contain.querySelectorAll('.newTask[data-status="completed"]').forEach(el => el.remove());
-    saveTasks();
-    togglePlaceholder();
-    applyFilters();
-});
-
-
-(() => {
-    const monthName = [
-        "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
-    ];
-
-    let viewDate = new Date();
-    let selectedDate = null;
-
-    function pad(n) {
-        return String(n).padStart(2, "0");
+const filPri = document.getElementById("filter-p")
+filPri.addEventListener("change", () => {
+    console.log("selected:", filPri.value);
+    console.log("tasks:", theTasks);
+    if (filPri.value === "all"){
+        showTasks(theTasks)
+    } else{
+        let FilterPr = theTasks.filter(task => task.priority.trim() === filPri.value.toLowerCase())
+        showTasks(FilterPr)
     }
-
-    function goodD(date) {
-        return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
-    }
-
-    function sameDay(a, b) {
-        return a && b &&
-            a.getFullYear() === b.getFullYear() &&
-            a.getMonth() === b.getMonth() &&
-            a.getDate() === b.getDate();
-    }
-
-    function openPicker() {
-        if (dateInput.value) {
-            const parsed = new Date(dateInput.value + "T00:00:00");
-            if (!isNaN(parsed.getTime())) {
-                viewDate = new Date(parsed.getFullYear(), parsed.getMonth(), 1);
-                selectedDate = parsed;
-            }
-        }
-        renderCal();
-        picker.classList.add("show");
-    }
-
-    function closePicker() {
-        picker.classList.remove("show");
-    }
-
-    function togglePicker(e) {
-        e.stopPropagation();
-        picker.classList.contains("show") ? closePicker() : openPicker();
-    }
-
-    function renderCal() {
-        const year = viewDate.getFullYear();
-        const month = viewDate.getMonth();
-
-        date.textContent = `${monthName[month]} ${year}`;
-
-        const weekday = new Date(year, month, 1).getDay();
-        const daysMonth = new Date(year, month + 1, 0).getDate();
-        const today = new Date();
-
-        let html = "";
-        for (let i = 0; i < weekday; i++) {
-            html += `<span class="dp-day dp-empty"></span>`;
-        }
-
-        for (let day = 1; day <= daysMonth; day++) {
-            const cellDate = new Date(year, month, day);
-            const classes = ["dp-day"];
-            if (sameDay(cellDate, today)) classes.push("today-cell");
-            if (sameDay(cellDate, selectedDate)) classes.push("dp-selected");
-            html += `<span class="${classes.join(" ")}" data-date="${goodD(cellDate)}">${day}</span>`;
-        }
-        daysGrid.innerHTML = html;
-    }
-
-    daysGrid.addEventListener("click", (e) => {
-        const cell = e.target.closest(".dp-day:not(.dp-empty)");
-        if (!cell) return;
-        const iso = cell.dataset.date;
-        dateInput.value = iso;
-        selectedDate = new Date(iso + "T00:00:00");
-        renderCal();
-        closePicker();
-        dateInput.dispatchEvent(new Event("change", { bubbles: true }));
-    });
-
-    prevBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1);
-        renderCal();
-    });
-
-    nextBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1);
-        renderCal();
-    });
-
-    todayBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const today = new Date();
-        viewDate = new Date(today.getFullYear(), today.getMonth(), 1);
-        selectedDate = today;
-        dateInput.value = goodD(today);
-        renderCal();
-        dateInput.dispatchEvent(new Event("change", { bubbles: true }));
-    });
-
-    clearDateBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        dateInput.value = "";
-        selectedDate = null;
-        renderCal();
-        dateInput.dispatchEvent(new Event("change", { bubbles: true }));
-    });
-
-    dateInput.addEventListener("click", togglePicker);
-    if (dateIcon) dateIcon.addEventListener("click", (e) => {
-        e.preventDefault();
-        togglePicker(e);
-    });
-
-    document.addEventListener("click", (e) => {
-        if (dateField && !dateField.contains(e.target)) closePicker();
-    });
-
-    picker.addEventListener("click", (e) => e.stopPropagation());
-})();
-
-
-loadTasks();
-renderAllTasks();
-applyFilters();
+})
