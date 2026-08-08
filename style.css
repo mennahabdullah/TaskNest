@@ -15,6 +15,10 @@
     --DangerLight: #FEE2E2;
     --InfoLight: #DBEAFE;
     --Shadow: rgba(139, 92, 246, 0.12);
+
+
+    --darkBG: #0F172A;
+    --darkCard: #1E293B;
 }
 
 body{
@@ -37,10 +41,6 @@ h1{
     display: flex;
     justify-content: center;
     align-items: center;
-}
-p,
-small{
-    color: var(--Text);
 }
 .sentence{
     display: flex;
@@ -74,7 +74,7 @@ main{
     box-shadow: 0.2rem 0.2rem 0.2rem #868686;
 }
 
-.myInput{
+.search{
     width: 30rem;
     height: 3rem;
     border-radius: 2rem;
@@ -86,7 +86,7 @@ main{
     -ms-border-radius: 2rem;
     -o-border-radius: 2rem;
 }
-.myInput:focus{
+.search:focus{
     outline: none;
     border: 0.1em solid var(--Primary);
 }
@@ -207,6 +207,7 @@ button:hover{
     -o-border-radius: 0.5rem;
     box-shadow: 0.2rem 0.2rem 0.2rem #868686;
 }
+
 .newTask:hover{
     cursor: pointer;
     scale: 1.01;
@@ -313,6 +314,9 @@ button:hover{
 .inputTask{
     height: 1.5rem;
 }
+.select-task{
+    height: 3rem !important;
+}
 .inputTask:focus,
 .select-task:focus{
     outline: none;
@@ -356,11 +360,12 @@ select{
     -o-border-radius: 2rem;
     font-family: "Poppins", sans-serif;
 }
-option{
+select option{
     text-align: center;
     background-color: var(--Background);
     font-family: "Poppins", sans-serif;
 }
+
 input[type="date"]::-webkit-calendar-picker-indicator {
     filter: invert(45%) sepia(60%) saturate(1000%) hue-rotate(230deg);
     cursor: pointer;
@@ -534,4 +539,98 @@ body::selection {
 .today:hover,
 .clear:hover{
     text-decoration: underline;
+}
+.mode{
+    position: relative;
+    border: 2px solid var(--InfoLight);
+    width: 4rem;
+    height: 2rem;
+    border-radius: 40rem;
+    -webkit-border-radius: 40rem;
+    -moz-border-radius: 40rem;
+    -ms-border-radius: 40rem;
+    -o-border-radius: 40rem;
+}
+.dark,
+.light{
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    -webkit-border-radius: 50%;
+    -moz-border-radius: 50%;
+    -ms-border-radius: 50%;
+    -o-border-radius: 50%;
+    position: absolute;
+    background-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+}
+.light{
+    left: 2rem;
+}
+.mode img{
+    width: 1.6rem;
+    height: 1.6rem;
+}
+.mode button:hover{
+    box-shadow: none;
+}
+
+
+
+.dark-bg{
+    background-color: var(--darkBG);
+    color: var(--InfoLight) !important;
+}
+.dark-card{
+    background-color: var(--darkCard);
+    color: var(--InfoLight) !important;
+}
+.alert{
+    display: none;
+}
+.alert.show{
+    background-color: var(--card);
+    border-radius: 1rem;
+    border: 2px solid var(--DangerLight);
+    color: var(--Text);
+    width: 30vw;
+    height: 40vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    -webkit-border-radius: 1rem;
+    -moz-border-radius: 1rem;
+    -ms-border-radius: 1rem;
+    -o-border-radius: 1rem;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 20;
+    -webkit-transform: translate(-50%, -50%);
+    -moz-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    -o-transform: translate(-50%, -50%);
+}
+.alert button{
+    width: 5rem;
+    height: 2rem;
+    border-radius: 1rem;
+    -webkit-border-radius: 1rem;
+    -moz-border-radius: 1rem;
+    -ms-border-radius: 1rem;
+    -o-border-radius: 1rem;
+}
+#confirm{
+    background-color: var(--Danger);
+    border: none;
+    color: var(--background);
+}
+#cancel{
+    background-color: transparent;
+    border: 2px solid var(--PrimaryLight);
 }
